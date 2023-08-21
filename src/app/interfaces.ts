@@ -21,5 +21,15 @@ export interface DeviceStatus {
   range?: {
     min: number;
     max: number;
-  }
+  };
+}
+
+export enum tempUnits {
+  'Celcius' = 'C',
+  'Fahrenheit' = 'F',
+}
+export type temperatureUnits = keyof typeof tempUnits;
+
+export interface Preferences {
+  unitTemp: tempUnits;
 }

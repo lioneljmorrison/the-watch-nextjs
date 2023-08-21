@@ -1,6 +1,6 @@
 import MainNav from './components/nav';
 import TempWidget from './components/temp';
-import { navData } from './data';
+import { navData, prefs } from './data';
 import { DeviceStatus } from './interfaces';
 import { tempMock } from './temp-mock-data';
 
@@ -11,7 +11,7 @@ export default function Home() {
       {/* <TempWidget data={tempMock[0]}></TempWidget> */}
       <div className='pt-4 px-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
         {tempMock.map((temp: DeviceStatus, idx: number) => {
-          return <TempWidget key={idx} data={temp}></TempWidget>;
+          return <TempWidget key={idx} data={temp} prefs={prefs}></TempWidget>;
         })}
       </div>
     </>
