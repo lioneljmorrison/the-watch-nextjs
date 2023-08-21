@@ -1,4 +1,4 @@
-import { NavLinks } from './interfaces';
+import { NavLinks, Preferences, tempUnits } from './interfaces';
 
 export const navData: NavLinks = {
   Dashboard: {
@@ -7,4 +7,8 @@ export const navData: NavLinks = {
   Settings: {
     href: './#settings',
   },
+};
+
+export const prefs: Preferences = {
+  unitTemp: tempUnits.Celcius
 };
