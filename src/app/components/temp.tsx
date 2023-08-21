@@ -1,14 +1,20 @@
 'use client';
 import { differenceInHours, format } from 'date-fns';
-import { DeviceStatus } from '../interfaces';
+import { DeviceStatus, Preferences, tempUnits } from '../interfaces';
 
-export default function TempWidget({ data }: { data: DeviceStatus }) {
+export default function TempWidget({ data, prefs }: { data: DeviceStatus, prefs: Preferences }) {
   const datetime = new Date(data.created);
   const time = format(datetime, 'H:mm');
   const hrs = differenceInHours(Date.now(), datetime);
   const battery = batteryStatus(data.battery);
   const sensorStatusClour = sensorStatus(data.temperature, data?.range);
-  const displayOverlay = hrs >= 6 ? 'absolute' : 'hidden';
+  const offline = hrs >= 6;
+  const displayOverlay = offline ? 'absolute' : 'hidden';
+  const temperature = tempDisplay(offline, data.temperature, prefs.unitTemp);
+
+  function tempDisplay(offline: boolean, temp: number, unit: tempUnits): string {
+    return offline ? `--.-°${unit}` : `${temp}°${unit}`;
+  }
 
   function sensorStatus(
     temp: number,
@@ -44,14 +50,11 @@ export default function TempWidget({ data }: { data: DeviceStatus }) {
     };
   }
 
-
   return (
     <div className={`w-40 mx-auto ${sensorStatusClour} text-slate-50 rounded-xl relative`}>
       <div className={`${displayOverlay} bg-black bg-opacity-60 z-10 h-full w-full flex items-center justify-center rounded-xl`}></div>
       <div className="z-20 pt-2 py-2 text-center text-lg relative">{data.deviceName}</div>
-      <div className="text-center text-3xl font-bold">
-        {data.temperature}&deg;C
-      </div>
+      <div className="text-center text-3xl font-bold">{temperature}</div>
       <div className="px-2 py-1 grid grid-cols-2 gap-4">
         <div className="text-base">{data.humidity}%</div>
         <div className="text-right">
