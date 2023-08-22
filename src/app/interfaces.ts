@@ -9,20 +9,42 @@ export interface NavLink {
   cssClass?: string;
 }
 
-export interface DeviceStatus {
-  created: number;
+export interface Devices {
   accountId: string;
   deviceId: string;
+  created: number;
   deviceType: string;
   deviceName: string;
-  humidity: number;
-  temperature: number;
-  battery: number;
   range?: {
     min: number;
     max: number;
   };
 }
+export interface DeviceStatus extends Devices {
+  humidity: number;
+  temperature: number;
+  battery: number;
+}
+
+export interface keyValuePair {
+  [key: string]: string | number;
+}
+
+export interface LambdaDevice {
+  accountId: { S: string };
+  deviceId: { S: string };
+  created: { S: string };
+  deviceName: { S: string };
+  deviceType: { S: string };
+}
+
+export interface LambdaDeviceStatus extends Omit<LambdaDevice, "deviceName"> {
+  deviceName?: { S: string };
+  humidity: { N: number };
+  temperature: { N: number };
+  battery: { N: number };
+}
+
 
 export enum tempUnits {
   'Celcius' = 'C',
