@@ -7,7 +7,7 @@ export default function TempWidget({ data, prefs }: { data: DeviceStatus, prefs:
   const time = format(datetime, 'H:mm');
   const hrs = differenceInHours(Date.now(), datetime);
   const battery = batteryStatus(data.battery);
-  const sensorStatusClour = sensorStatus(data.temperature, data?.range);
+  const sensorStatusColour = sensorStatus(data.temperature, data?.range);
   const offline = hrs >= 6;
   const displayOverlay = offline ? 'absolute' : 'hidden';
   const temperature = tempDisplay(offline, data.temperature, prefs.unitTemp);
@@ -51,7 +51,7 @@ export default function TempWidget({ data, prefs }: { data: DeviceStatus, prefs:
   }
 
   return (
-    <div className={`w-40 mx-auto ${sensorStatusClour} text-slate-50 rounded-xl relative`}>
+    <div className={`w-40 mx-auto ${sensorStatusColour} text-slate-50 rounded-xl relative`}>
       <div className={`${displayOverlay} bg-black bg-opacity-60 z-10 h-full w-full flex items-center justify-center rounded-xl`}></div>
       <div className="z-20 pt-2 py-2 text-center text-lg relative">{data.deviceName}</div>
       <div className="text-center text-3xl font-bold">{temperature}</div>
