@@ -1,5 +1,5 @@
 'use client';
-import { DeviceStatus, LambdaDeviceStatus, Preferences, keyValuePair } from '../interfaces';
+import { DeviceStatus, LambdaDeviceStatus, Preferences } from '../interfaces';
 import { SwitchBotDevices } from '../switchBotDevices';
 import { useEffect, useState } from 'react';
 import TempWidget from './temp';
