@@ -9,17 +9,24 @@ export interface NavLink {
   cssClass?: string;
 }
 
+export interface TempRange {
+  min: number | undefined;
+  max: number | undefined;
+}
+
 export interface Device {
   accountId: string;
   deviceId: string;
   created: number;
   deviceType: string;
   deviceName: string;
-  range?: {
-    min: number;
-    max: number;
-  };
+  range?: TempRange;
 }
+
+export interface DeviceMap {
+  [deviceId: string]: Omit<Device, "deviceId">;
+}
+
 export interface DeviceStatus extends Device {
   humidity: number;
   temperature: number;
@@ -36,15 +43,20 @@ export interface LambdaDevice {
   created: { S: string };
   deviceName: { S: string };
   deviceType: { S: string };
+  range?: {
+    M: {
+      min: { N: number };
+      max: { N: number };
+    };
+  };
 }
 
-export interface LambdaDeviceStatus extends Omit<LambdaDevice, "deviceName"> {
+export interface LambdaDeviceStatus extends Omit<LambdaDevice, 'deviceName'> {
   deviceName?: { S: string };
   humidity: { N: number };
   temperature: { N: number };
   battery: { N: number };
 }
-
 
 export enum tempUnits {
   'Celcius' = 'C',
