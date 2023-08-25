@@ -10,8 +10,8 @@ export interface NavLink {
 }
 
 export interface TempRange {
-  min: number | undefined;
-  max: number | undefined;
+  min: number;
+  max: number;
 }
 
 export interface Device {
@@ -20,7 +20,7 @@ export interface Device {
   created: number;
   deviceType: string;
   deviceName: string;
-  range?: TempRange;
+  range: TempRange;
 }
 
 export interface DeviceMap {
@@ -43,7 +43,7 @@ export interface LambdaDevice {
   created: { S: string };
   deviceName: { S: string };
   deviceType: { S: string };
-  range?: {
+  range: {
     M: {
       min: { N: number };
       max: { N: number };

@@ -13,7 +13,7 @@ export default function TempWidget({
   const time = format(datetime, 'H:mm');
   const hrs = differenceInHours(Date.now(), datetime);
   const battery = batteryStatus(data.battery);
-  const sensorStatusColour = sensorStatus(data.temperature, data?.range);
+  const sensorStatusColour = sensorStatus(data);
   const offline = hrs >= 6;
   const displayOverlay = offline ? 'absolute' : 'hidden';
   const temperature = tempDisplay(offline, data.temperature, prefs.unitTemp);
@@ -26,10 +26,14 @@ export default function TempWidget({
     return offline ? `--.-°${unit}` : `${temp}°${unit}`;
   }
 
-  function sensorStatus(temp: number, range: TempRange | undefined): string {
-    return (range?.min && (temp < range.min))
+  function sensorStatus(data: DeviceStatus): string {
+    const temp = Number(data.temperature);
+    const min = Number(data.range.min);
+    const max = Number(data.range.max);
+
+    return temp < min
       ? 'bg-blue-500'
-      : (range?.max && (temp > range.max))
+      : temp > max
       ? 'bg-pink-700'
       : 'bg-zinc-600';
   }

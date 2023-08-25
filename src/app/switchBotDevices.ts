@@ -19,7 +19,7 @@ export class SwitchBotDevices {
   transformDeviceStatus(deviceData: LambdaDeviceStatus[]): DeviceStatus[] {
     return deviceData.map((device) => {
       const deviceId = device.deviceId.S;
-      const data: DeviceStatus = {
+      return {
         created: parseInt(device.created.S),
         accountId: device.accountId.S,
         deviceId: device.deviceId.S,
@@ -28,16 +28,11 @@ export class SwitchBotDevices {
         humidity: device.humidity.N,
         temperature: device.temperature.N,
         battery: device.battery.N,
-      }
-
-      if (this._deviceMap[deviceId].range) {
-        data.range = {
-          min: this._deviceMap[deviceId].range?.min || undefined,
-          max: this._deviceMap[deviceId].range?.max || undefined,
+        range: {
+          min: this._deviceMap[deviceId].range?.min,
+          max: this._deviceMap[deviceId].range?.max,
         }
       }
-
-      return data;
     });
   }
 
@@ -64,8 +59,8 @@ export class SwitchBotDevices {
             deviceType: device.deviceType.S,
             deviceName: device.deviceName.S,
             range: {
-              min: device.range?.M.min.N || undefined,
-              max: device.range?.M.max.N || undefined,
+              min: device.range?.M.min.N,
+              max: device.range?.M.max.N,
             },
           };
 
@@ -73,8 +68,6 @@ export class SwitchBotDevices {
         }),
       )
       .then((data) => {
-        console.log('Initial Device Map');
-        console.log(this._deviceMap);
         return data;
       })
       .catch((err) => err);
