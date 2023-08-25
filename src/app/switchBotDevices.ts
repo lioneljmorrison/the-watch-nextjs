@@ -38,7 +38,7 @@ export class SwitchBotDevices {
     });
   }
 
-  private getDevicesStatus(deviceNames: keyValuePair): Promise<DeviceStatus[]> {
+  private getDevicesStatus(): Promise<DeviceStatus[]> {
     return fetch(`${this._uri}/get-latest/${this._accountId}`)
       .then((latest) => latest.json())
       .then((devices) => devices.data)
@@ -66,7 +66,7 @@ export class SwitchBotDevices {
   getDevices(): Promise<DeviceStatus[]> {
     return this.getAllDevices()
       .then((devices) => this.getDeviceNames(devices))
-      .then((deviceNames) => this.getDevicesStatus(deviceNames));
+      .then(() => this.getDevicesStatus());
   }
 
   get deviceNames(): keyValuePair {
