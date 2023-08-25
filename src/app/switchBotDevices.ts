@@ -3,47 +3,45 @@ import {
   Device,
   LambdaDevice,
   LambdaDeviceStatus,
-  keyValuePair,
+  DeviceMap,
 } from './interfaces';
 
 export class SwitchBotDevices {
   private _uri;
   private _accountId;
-  private _deviceNames: keyValuePair = {};
+  private _deviceMap: DeviceMap = {};
 
   constructor(uri: string, accountId: string) {
     this._uri = uri;
     this._accountId = accountId;
   }
 
-  transformDeviceStatus(
-    deviceData: LambdaDeviceStatus[],
-    deviceNames?: keyValuePair,
-  ): DeviceStatus[] {
+  transformDeviceStatus(deviceData: LambdaDeviceStatus[]): DeviceStatus[] {
     return deviceData.map((device) => {
+      const deviceId = device.deviceId.S;
       return {
         created: parseInt(device.created.S),
         accountId: device.accountId.S,
         deviceId: device.deviceId.S,
         deviceType: device.deviceType.S,
-        deviceName: deviceNames
-          ? deviceNames?.[device.deviceId.S]?.toString()
-          : this._deviceNames
-          ? this._deviceNames?.[device.deviceId.S]?.toString()
-          : '',
+        deviceName: this._deviceMap[deviceId].deviceName,
         humidity: device.humidity.N,
         temperature: device.temperature.N,
         battery: device.battery.N,
-      };
+        range: {
+          min: this._deviceMap[deviceId].range?.min,
+          max: this._deviceMap[deviceId].range?.max,
+        }
+      }
     });
   }
 
-  private getDevicesStatus(deviceNames: keyValuePair): Promise<DeviceStatus[]> {
+  private getDevicesStatus(): Promise<DeviceStatus[]> {
     return fetch(`${this._uri}/get-latest/${this._accountId}`)
       .then((latest) => latest.json())
       .then((devices) => devices.data)
       .then((deviceData: LambdaDeviceStatus[]) =>
-        this.transformDeviceStatus(deviceData, this._deviceNames),
+        this.transformDeviceStatus(deviceData),
       )
       .catch((err) => err);
   }
@@ -52,36 +50,33 @@ export class SwitchBotDevices {
     return fetch(`${this._uri}/get-devices/${this._accountId}`)
       .then((devices) => devices.json())
       .then((data) =>
-        data.data.map((device: LambdaDevice) => ({
-          created: parseInt(device.created.S),
-          accountId: device.accountId.S,
-          deviceId: device.deviceId.S,
-          deviceType: device.deviceType.S,
-          deviceName: device.deviceName.S,
-        })),
+        data.data.map((device: LambdaDevice) => {
+          const deviceId = device.deviceId.S;
+
+          this._deviceMap[deviceId] = {
+            created: parseInt(device.created.S),
+            accountId: device.accountId.S,
+            deviceType: device.deviceType.S,
+            deviceName: device.deviceName.S,
+            range: {
+              min: device.range?.M.min.N,
+              max: device.range?.M.max.N,
+            },
+          };
+
+          return { ...this._deviceMap[deviceId], deviceId };
+        }),
       )
+      .then((data) => {
+        return data;
+      })
       .catch((err) => err);
   }
 
   getDevices(): Promise<DeviceStatus[]> {
-    return this.getAllDevices()
-      .then((devices) => this.getDeviceNames(devices))
-      .then((deviceNames) => this.getDevicesStatus(deviceNames));
-  }
-
-  get deviceNames(): keyValuePair {
-    return this._deviceNames;
-  }
-
-  getDeviceNames(devices: Device[] | DeviceStatus[]): keyValuePair {
-    const deviceNames: keyValuePair = {};
-
-    devices?.forEach((device) => {
-      deviceNames[device.deviceId] = device.deviceName;
-    });
-
-    this._deviceNames = deviceNames;
-
-    return deviceNames;
+    return (
+      this.getAllDevices()
+        .then(() => this.getDevicesStatus())
+    );
   }
 }
