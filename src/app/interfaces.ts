@@ -9,7 +9,7 @@ export interface NavLink {
   cssClass?: string;
 }
 
-export interface Devices {
+export interface Device {
   accountId: string;
   deviceId: string;
   created: number;
@@ -20,7 +20,7 @@ export interface Devices {
     max: number;
   };
 }
-export interface DeviceStatus extends Devices {
+export interface DeviceStatus extends Device {
   humidity: number;
   temperature: number;
   battery: number;
