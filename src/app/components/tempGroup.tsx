@@ -31,9 +31,11 @@ export default function TempGroupWidget({
   });
 
   useEffect(() => {
-    SBDevices.getDevices()
-      .then((data) => setLoadedDevices(data))
-      .catch((err) => console.log(err));
+    SBDevices.getDevices$().subscribe({
+      next: (data) => setLoadedDevices(data.status),
+      error: (err) => console.log(`Opps: ${err}`),
+      complete: () => console.log('All Done'),
+    });
   }, []);
 
   return (
@@ -42,10 +44,6 @@ export default function TempGroupWidget({
         <div className="max-w-7xl mx-auto py-4 px-6 lg:px-8">
           <div className="pt-4 px-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {loadedDevices?.map((deviceStatus: DeviceStatus, idx: number) => {
-              if (deviceStatus.deviceId === 'D52C48600058') {
-                console.log(deviceStatus);
-              }
-
               return (
                 <TempWidget
                   key={deviceStatus.deviceId}

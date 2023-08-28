@@ -1,10 +1,19 @@
 import {
+  Observable,
+  catchError,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
+import {
   DeviceStatus,
   Device,
   LambdaDevice,
   LambdaDeviceStatus,
   DeviceMap,
 } from './interfaces';
+import { fromFetch } from 'rxjs/fetch';
 
 export class SwitchBotDevices {
   private _uri;
@@ -16,9 +25,29 @@ export class SwitchBotDevices {
     this._accountId = accountId;
   }
 
-  transformDeviceStatus(deviceData: LambdaDeviceStatus[]): DeviceStatus[] {
-    return deviceData.map((device) => {
+  transformDevices(data: LambdaDevice[]): Device[] {
+    return data.map((device) => {
       const deviceId = device.deviceId.S;
+
+      this._deviceMap[deviceId] = {
+        created: parseInt(device.created.S),
+        accountId: device.accountId.S,
+        deviceType: device.deviceType.S,
+        deviceName: device.deviceName.S,
+        range: {
+          min: device.range?.M.min.N,
+          max: device.range?.M.max.N,
+        },
+      };
+
+      return { ...this._deviceMap[deviceId], deviceId };
+    });
+  }
+
+  transformDeviceStatus(data: LambdaDeviceStatus[]): DeviceStatus[] {
+    return data.map((device) => {
+      const deviceId = device.deviceId.S;
+
       return {
         created: parseInt(device.created.S),
         accountId: device.accountId.S,
@@ -31,52 +60,47 @@ export class SwitchBotDevices {
         range: {
           min: this._deviceMap[deviceId].range?.min,
           max: this._deviceMap[deviceId].range?.max,
-        }
-      }
+        },
+      };
     });
   }
 
-  private getDevicesStatus(): Promise<DeviceStatus[]> {
-    return fetch(`${this._uri}/get-latest/${this._accountId}`)
-      .then((latest) => latest.json())
-      .then((devices) => devices.data)
-      .then((deviceData: LambdaDeviceStatus[]) =>
-        this.transformDeviceStatus(deviceData),
-      )
-      .catch((err) => err);
+  private fetchURI$<T>(
+    endpoint: string,
+  ): Observable<T[] | { error: boolean; message: string }> {
+    return fromFetch(endpoint).pipe(
+      switchMap((response) => {
+        if (response.ok) {
+          // OK return data
+          return response.json().then((data) => data.data);
+        } else {
+          // Server is returning a status requiring the client to try something else.
+          return of({ error: true, message: `Error ${response.status}` });
+        }
+      }),
+      catchError((err) => {
+        // Network or other error, handle appropriately
+        console.error(err);
+        return of({ error: true, message: err.message });
+      }),
+    );
   }
 
-  private getAllDevices(): Promise<Device[]> {
-    return fetch(`${this._uri}/get-devices/${this._accountId}`)
-      .then((devices) => devices.json())
-      .then((data) =>
-        data.data.map((device: LambdaDevice) => {
-          const deviceId = device.deviceId.S;
+  getDevices$(): Observable<{ device: Device[]; status: DeviceStatus[] }> {
+    const fork = {
+      status$: this.fetchURI$<LambdaDeviceStatus>(
+        `${this._uri}/get-latest/${this._accountId}`,
+      ),
+      devices$: this.fetchURI$<LambdaDevice>(
+        `${this._uri}/get-devices/${this._accountId}`,
+      ),
+    };
 
-          this._deviceMap[deviceId] = {
-            created: parseInt(device.created.S),
-            accountId: device.accountId.S,
-            deviceType: device.deviceType.S,
-            deviceName: device.deviceName.S,
-            range: {
-              min: device.range?.M.min.N,
-              max: device.range?.M.max.N,
-            },
-          };
-
-          return { ...this._deviceMap[deviceId], deviceId };
-        }),
-      )
-      .then((data) => {
-        return data;
-      })
-      .catch((err) => err);
-  }
-
-  getDevices(): Promise<DeviceStatus[]> {
-    return (
-      this.getAllDevices()
-        .then(() => this.getDevicesStatus())
+    return forkJoin(fork).pipe(
+      map((data) => ({
+        device: this.transformDevices(<LambdaDevice[]>data.devices$),
+        status: this.transformDeviceStatus(<LambdaDeviceStatus[]>data.status$),
+      })),
     );
   }
 }
