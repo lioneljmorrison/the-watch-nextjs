@@ -31,15 +31,11 @@ export default function TempGroupWidget({
   });
 
   useEffect(() => {
-    // console.log('data$');
-    // SBDevices.getDevices$().subscribe(console.log);
-
-    SBDevices.getDevices()
-      .then((data) => {
-        console.log('data');
-        console.log(data);
-      })
-      .catch((err) => console.log(err));
+    SBDevices.getDevices$().subscribe({
+      next: (data) => setLoadedDevices(data.status),
+      error: (err) => console.log(`Opps: ${err}`),
+      complete: () => console.log('All Done'),
+    });
   }, []);
 
   return (
@@ -47,7 +43,7 @@ export default function TempGroupWidget({
       <Suspense fallback={<Loading />}>
         <div className="max-w-7xl mx-auto py-4 px-6 lg:px-8">
           <div className="pt-4 px-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {/* {loadedDevices?.map((deviceStatus: DeviceStatus, idx: number) => {
+            {loadedDevices?.map((deviceStatus: DeviceStatus, idx: number) => {
               return (
                 <TempWidget
                   key={deviceStatus.deviceId}
@@ -55,7 +51,7 @@ export default function TempGroupWidget({
                   prefs={prefs}
                 ></TempWidget>
               );
-            })} */}
+            })}
           </div>
         </div>
       </Suspense>

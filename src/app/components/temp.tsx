@@ -28,12 +28,14 @@ export default function TempWidget({
 
   function sensorStatus(data: DeviceStatus): string {
     const temp = Number(data.temperature);
-    const min = Number(data.range.min);
-    const max = Number(data.range.max);
 
-    return temp < min
+    if (!data.range) {
+      return 'bg-zinc-600';
+    }
+
+    return temp < Number(data.range.min)
       ? 'bg-blue-500'
-      : temp > max
+      : temp > Number(data.range.max)
       ? 'bg-pink-700'
       : 'bg-zinc-600';
   }

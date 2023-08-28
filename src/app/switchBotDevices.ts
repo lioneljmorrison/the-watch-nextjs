@@ -1,4 +1,11 @@
-import { Observable, catchError, forkJoin, of, switchMap } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 import {
   DeviceStatus,
   Device,
@@ -45,7 +52,7 @@ export class SwitchBotDevices {
         created: parseInt(device.created.S),
         accountId: device.accountId.S,
         deviceId: device.deviceId.S,
-        deviceType: this._deviceMap[deviceId].deviceType || '',
+        deviceType: device.deviceType.S,
         deviceName: this._deviceMap[deviceId].deviceName,
         humidity: device.humidity.N,
         temperature: device.temperature.N,
@@ -79,53 +86,21 @@ export class SwitchBotDevices {
     );
   }
 
-  private getDevicesStatus(): Promise<DeviceStatus[]> {
-    return fetch(`${this._uri}/get-latest/${this._accountId}`)
-      .then((latest) => latest.json())
-      .then((devices) => devices.data)
-      .then((data: LambdaDeviceStatus[]) => {
-        return this.transformDeviceStatus(data)})
-      .catch((err) => err);
-  }
-
-  private getAllDevices(): Promise<Device[]> {
-    return fetch(`${this._uri}/get-devices/${this._accountId}`)
-      .then((devices) => devices.json())
-      .then((data: LambdaDevice[]) => this.transformDevices(data))
-
-      .catch((err) => err);
-  }
-
-  getDevices$(): Observable<DeviceStatus[]> {
-    console.log('GetDevices');
-
-    const fork$ = {
-      status: this.fetchURI$<LambdaDeviceStatus>(
+  getDevices$(): Observable<{ device: Device[]; status: DeviceStatus[] }> {
+    const fork = {
+      status$: this.fetchURI$<LambdaDeviceStatus>(
         `${this._uri}/get-latest/${this._accountId}`,
       ),
-      devices: this.fetchURI$<LambdaDevice>(
+      devices$: this.fetchURI$<LambdaDevice>(
         `${this._uri}/get-devices/${this._accountId}`,
       ),
     };
 
-    return new Observable((observer) => {
-      forkJoin(fork$)
-        .subscribe((res) => {
-          const data = {
-            devices: this.transformDevices(<LambdaDevice[]>res.devices),
-            status: this.transformDeviceStatus(
-              <LambdaDeviceStatus[]>res.status,
-            ),
-          };
-
-          console.log(data.status);
-          observer.next(data.status);
-        })
-        .unsubscribe();
-    });
-  }
-
-  getDevices(): Promise<DeviceStatus[]> {
-    return this.getAllDevices().then(() => this.getDevicesStatus());
+    return forkJoin(fork).pipe(
+      map((data) => ({
+        device: this.transformDevices(<LambdaDevice[]>data.devices$),
+        status: this.transformDeviceStatus(<LambdaDeviceStatus[]>data.status$),
+      })),
+    );
   }
 }
