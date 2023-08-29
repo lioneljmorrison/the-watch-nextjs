@@ -1,5 +1,6 @@
 import {
   Observable,
+  Subject,
   catchError,
   forkJoin,
   map,
@@ -14,15 +15,33 @@ import {
   DeviceMap,
 } from './interfaces';
 import { fromFetch } from 'rxjs/fetch';
+import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
+
+export interface Urls {
+  ws: string;
+  lambda: string;
+}
 
 export class SwitchBotDevices {
-  private _uri;
+  private _urls: Urls;
   private _accountId;
   private _deviceMap: DeviceMap = {};
+  openEvent$ = new Subject<Event>();
+  closeEvent$ = new Subject<Event>();
+  connection$: WebSocketSubject<LambdaDeviceStatus[]>;
 
-  constructor(uri: string, accountId: string) {
-    this._uri = uri;
+  constructor(urls: Urls, accountId: string) {
+    this._urls = urls;
     this._accountId = accountId;
+    this.connection$ = this.websocketConnect$(urls.ws);
+  }
+
+  websocketConnect$(url: string): WebSocketSubject<LambdaDeviceStatus[]> {
+    return webSocket({
+      url,
+      openObserver: this.openEvent$,
+      closeObserver: this.closeEvent$,
+    });
   }
 
   transformDevices(data: LambdaDevice[]): Device[] {
@@ -89,10 +108,10 @@ export class SwitchBotDevices {
   getDevices$(): Observable<{ device: Device[]; status: DeviceStatus[] }> {
     const fork = {
       status$: this.fetchURI$<LambdaDeviceStatus>(
-        `${this._uri}/get-latest/${this._accountId}`,
+        `${this._urls.lambda}/get-latest/${this._accountId}`,
       ),
       devices$: this.fetchURI$<LambdaDevice>(
-        `${this._uri}/get-devices/${this._accountId}`,
+        `${this._urls.lambda}/get-devices/${this._accountId}`,
       ),
     };
 
