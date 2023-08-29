@@ -1,34 +1,33 @@
 'use client';
-import { DeviceStatus, LambdaDeviceStatus, Preferences } from '../interfaces';
-import { SwitchBotDevices } from '../switchBotDevices';
+import { DeviceStatus, Preferences } from '../interfaces';
+import { SwitchBotDevices, Urls } from '../switchBotDevices';
 import React, { Suspense, useEffect, useState } from 'react';
 import TempWidget from './temp';
-import useWebSocket from 'react-use-websocket';
 import Loading from './loading';
 
 export default function TempGroupWidget({
   urls,
   prefs,
 }: {
-  urls: { ws: string; lambda: string };
+  urls: Urls;
   prefs: Preferences;
 }) {
   const accountId = 'HCC';
   const [loadedDevices, setLoadedDevices] = useState<DeviceStatus[]>([]);
-  const [SBDevices] = useState(new SwitchBotDevices(urls.lambda, accountId));
+  const [SBDevices] = useState(new SwitchBotDevices(urls, accountId));
 
-  useWebSocket(urls.ws, {
-    onOpen: () => {
-      console.log('WebSocket Established');
-    },
-    onClose: () => {
-      console.log('WebSocket Disconnected');
-    },
-    onMessage: (event) => {
-      const lambdaDevices = JSON.parse(event.data) as LambdaDeviceStatus[];
-      setLoadedDevices(SBDevices.transformDeviceStatus(lambdaDevices));
-    },
-  });
+  useEffect(() => {
+    SBDevices.connection$.subscribe({
+      next: (status) =>
+        setLoadedDevices(SBDevices.transformDeviceStatus(status)),
+    });
+    SBDevices.openEvent$.subscribe({
+      next: () => console.log('WebSocket Established'),
+    });
+    SBDevices.closeEvent$.subscribe({
+      next: () => console.log('WebSocket Disconnected'),
+    });
+  }, []);
 
   useEffect(() => {
     SBDevices.getDevices$().subscribe({
