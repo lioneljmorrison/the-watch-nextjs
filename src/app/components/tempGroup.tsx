@@ -18,17 +18,15 @@ export default function TempGroupWidget({
 
   useEffect(() => {
     SBDevices.connection$.subscribe({
-      next: (status) => {
-        console.log(status);
-        setLoadedDevices(SBDevices.transformDeviceStatus(status))
-      },
+      next: (status) =>
+        setLoadedDevices(SBDevices.transformDeviceStatus(status)),
     });
     SBDevices.openEvent$.subscribe({
-      next: () => console.log('WebSocket Established')
-    })
+      next: () => console.log('WebSocket Established'),
+    });
     SBDevices.closeEvent$.subscribe({
       next: () => console.log('WebSocket Disconnected'),
-    })
+    });
   }, []);
 
   useEffect(() => {
