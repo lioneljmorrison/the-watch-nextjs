@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { SwitchBot } from '../../../switchbot';
-import { getParam } from '../../../utils';
+import { SwitchBot } from '../../../../src/utils/switchbot';
+import { getParam } from '../../../../src/utils/utils';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (req.method) {
         case 'GET':
             const switchbot = new SwitchBot(token, secret);
-            
+
             await switchbot.initalize();
 
             res.status(200).json(switchbot.devices);

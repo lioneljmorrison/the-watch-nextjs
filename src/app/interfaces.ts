@@ -24,7 +24,7 @@ export interface Device {
 }
 
 export interface DeviceMap {
-  [deviceId: string]: Omit<Device, "deviceId">;
+  [deviceId: string]: Omit<Device, 'deviceId'>;
 }
 
 export interface DeviceStatus extends Device {

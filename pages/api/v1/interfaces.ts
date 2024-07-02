@@ -13,7 +13,7 @@ export interface DeviceListStatus {
 }
 
 export interface Devices {
-    [hub:string]: DeviceListStatus[]
+    [hub: string]: DeviceListStatus[]
 }
 
 export interface DeviceImport {
