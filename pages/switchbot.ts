@@ -1,4 +1,4 @@
-import { DeviceList, DeviceListStatus } from "./api/v1/interfaces";
+import { DeviceList, DeviceListStatus, Devices } from "./api/v1/interfaces";
 import * as crypto from 'crypto-js';
 
 export class SwitchBot {
@@ -8,7 +8,7 @@ export class SwitchBot {
     private _nonce: string;
     private _timestamp: string;
     private _uri = 'https://api.switch-bot.com/v1.1';
-    private _deviceList: unknown;
+    private _devices: Devices = {};
 
     constructor(token: string, secret: string) {
         this._token = token;
@@ -23,10 +23,10 @@ export class SwitchBot {
     }
 
     get devices(): unknown {
-        return this._deviceList;
+        return this._devices;
     }
 
-    async getDevices(): Promise<DeviceListStatus[] | string> {
+    async initalize(): Promise<Devices> {
         const requestOptions: RequestInit = {
             method: 'GET',
             headers: {
@@ -38,11 +38,21 @@ export class SwitchBot {
             redirect: 'follow',
         };
 
-        const result = await fetch(`${this._uri}/devices`, requestOptions)
+        const result = await fetch(`${this._uri}/devices`, requestOptions);
+
         if (result.status !== 200) {
-            return result.statusText;
+            return {};
         }
 
-        return (JSON.parse(await result.text()) as DeviceList).body.deviceList;
+        const findString = ['hub', 'hub mini'],
+            devices = (JSON.parse(await result.text()) as DeviceList).body.deviceList,
+            hubIds = ['000000000000', '', ...devices.filter(device => findString.includes(device.deviceType.toLocaleLowerCase()))
+                .map(device => device.deviceId)];
+
+        hubIds.forEach(hubId => {
+            this._devices[hubId] = devices.filter(device => device.hubDeviceId === hubId);            
+        })
+
+        return this._devices;
     }
 }
