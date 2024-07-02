@@ -1,4 +1,4 @@
-import { DeviceList, Devices } from '../../pages/api/v1/interfaces';
+import { DeviceList, DeviceStatus, Devices, LogDeviceStatus } from '../../pages/api/v1/interfaces';
 import * as crypto from 'crypto-js';
 
 export class SwitchBot {
@@ -28,24 +28,27 @@ export class SwitchBot {
     return this._devices;
   }
 
-  async initalize(): Promise<Devices> {
+  private requestOptions(method: 'GET' | 'POST'): RequestInit {
+    return {
+      method,
+      headers: {
+        Authorization: this._token,
+        nonce: this._nonce,
+        t: this._timestamp,
+        sign: this._signature,
+      },
+      redirect: 'follow',
+    };
+  }
+
+  async fetchAllDevices(): Promise<Devices> {
     return await this.deviceList();
   }
 
   async deviceList(): Promise<Devices> {
-    const requestOptions: RequestInit = {
-        method: 'GET',
-        headers: {
-          Authorization: this._token,
-          nonce: this._nonce,
-          t: this._timestamp,
-          sign: this._signature,
-        },
-        redirect: 'follow',
-      },
-      devices: Devices = {};
-
-    const result = await fetch(`${this._uri}/devices`, requestOptions);
+    const requestOptions = this.requestOptions('GET'),
+      devices: Devices = {},
+      result = await fetch(`${this._uri}/devices`, requestOptions);
 
     if (result.status !== 200) {
       return {};
@@ -74,5 +77,17 @@ export class SwitchBot {
       );
 
     return this._devices;
+  }
+
+  async deviceStatus(deviceId: string): Promise<LogDeviceStatus> {
+    const requestOptions = this.requestOptions('GET'),
+      result = await fetch(`${this._uri}/devices/${deviceId}/status`, requestOptions),
+      deviceData = await result.json();
+
+    return {
+      created: Date.now().toString(),
+      accountId: '',
+      ...(deviceData?.body || {}),
+    };
   }
 }
