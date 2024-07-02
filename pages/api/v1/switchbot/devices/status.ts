@@ -9,9 +9,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   switch (req.method) {
     case 'GET':
-      const switchbot = new SwitchBot(token, secret);
+      const switchbot = new SwitchBot(token, secret),
+        data = await switchbot.deviceStatus(deviceId);
 
-      res.status(200).json(await switchbot.deviceStatus(deviceId));
+      if (data) {
+        res.status(200).json(await switchbot.deviceStatus(deviceId));
+      } else {
+        res.status(404).json('No Device');
+      }
       break;
 
     default:

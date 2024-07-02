@@ -79,15 +79,17 @@ export class SwitchBot {
     return this._devices;
   }
 
-  async deviceStatus(deviceId: string): Promise<LogDeviceStatus> {
+  async deviceStatus(deviceId: string): Promise<LogDeviceStatus | undefined> {
     const requestOptions = this.requestOptions('GET'),
       result = await fetch(`${this._uri}/devices/${deviceId}/status`, requestOptions),
       deviceData = await result.json();
 
-    return {
-      created: Date.now().toString(),
-      accountId: '',
-      ...(deviceData?.body || {}),
-    };
+    return deviceData.statusCode === 100
+      ? {
+          created: Date.now().toString(),
+          accountId: '',
+          ...deviceData.body,
+        }
+      : undefined;
   }
 }
