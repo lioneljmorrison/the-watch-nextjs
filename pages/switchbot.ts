@@ -46,11 +46,13 @@ export class SwitchBot {
 
         const findString = ['hub', 'hub mini'],
             devices = (JSON.parse(await result.text()) as DeviceList).body.deviceList,
-            hubIds = ['000000000000', '', ...devices.filter(device => findString.includes(device.deviceType.toLocaleLowerCase()))
-                .map(device => device.deviceId)];
+            deviceIds = Array.from(new Set(devices.map(device => device.hubDeviceId))),
+            hubIds = devices.filter(device => findString.includes(device.deviceType.toLocaleLowerCase()))
+                .map(device => device.deviceId),
+            sensors = devices.filter(device => !hubIds.includes(device.deviceId));
 
-        hubIds.forEach(hubId => {
-            this._devices[hubId] = devices.filter(device => device.hubDeviceId === hubId);            
+        deviceIds.forEach(hubId => {            
+            this._devices[hubId] = sensors.filter(device => device.hubDeviceId === hubId);
         })
 
         return this._devices;
