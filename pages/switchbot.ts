@@ -36,7 +36,8 @@ export class SwitchBot {
                 sign: this._signature,
             },
             redirect: 'follow',
-        };
+        },
+            devices: Devices = {};
 
         const result = await fetch(`${this._uri}/devices`, requestOptions);
 
@@ -45,15 +46,22 @@ export class SwitchBot {
         }
 
         const findString = ['hub', 'hub mini'],
-            devices = (JSON.parse(await result.text()) as DeviceList).body.deviceList,
-            deviceIds = Array.from(new Set(devices.map(device => device.hubDeviceId))),
-            hubIds = devices.filter(device => findString.includes(device.deviceType.toLocaleLowerCase()))
+            deviceList = (JSON.parse(await result.text()) as DeviceList).body.deviceList,
+            deviceIds = Array.from(new Set(deviceList.map(device => device.hubDeviceId))),
+            hubIds = deviceList.filter(device => findString.includes(device.deviceType.toLocaleLowerCase()))
                 .map(device => device.deviceId),
-            sensors = devices.filter(device => !hubIds.includes(device.deviceId));
+            sensors = deviceList.filter(device => !hubIds.includes(device.deviceId));
 
-        deviceIds.forEach(hubId => {            
-            this._devices[hubId] = sensors.filter(device => device.hubDeviceId === hubId);
+        deviceIds.forEach(hubId => {
+            devices[hubId] = sensors.filter(device => device.hubDeviceId === hubId);
         })
+
+        this._devices = Object.keys(devices)
+            .filter(key => devices[key].length > 0)
+            .reduce((obj, key) => {
+                obj[key] = devices[key];
+                return obj;
+            }, {} as { [key: string]: any[] });
 
         return this._devices;
     }
