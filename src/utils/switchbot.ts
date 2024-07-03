@@ -1,5 +1,12 @@
-import { DeviceList, DeviceStatus, Devices, LogDeviceStatus } from '../../pages/api/v1/interfaces';
+import { DeviceList, Devices, LogDeviceStatus } from '../../pages/api/v1/interfaces';
 import * as crypto from 'crypto-js';
+
+interface RequestBody {
+  action: string;
+  url?: string;
+  urls?: string[];
+  deviceList?: 'ALL' | string;
+}
 
 export class SwitchBot {
   private _token: string;
@@ -28,9 +35,9 @@ export class SwitchBot {
     return this._devices;
   }
 
-  private requestOptions(method: 'GET' | 'POST'): RequestInit {
+  private requestOptionsGET(): RequestInit {
     return {
-      method,
+      method: 'GET',
       headers: {
         Authorization: this._token,
         nonce: this._nonce,
@@ -41,12 +48,29 @@ export class SwitchBot {
     };
   }
 
+  private requestOptionsPOST(body: RequestBody): RequestInit {
+    const config = {
+      method: 'POST',
+      headers: {
+        Authorization: this._token,
+        nonce: this._nonce,
+        t: this._timestamp,
+        sign: this._signature,
+        'Content-Type': 'application/json',
+      },
+      redirect: 'follow',
+      body: JSON.stringify(body) || undefined,
+    };
+
+    return <RequestInit>config;
+  }
+
   async fetchAllDevices(): Promise<Devices> {
     return await this.deviceList();
   }
 
   async deviceList(): Promise<Devices> {
-    const requestOptions = this.requestOptions('GET'),
+    const requestOptions = this.requestOptionsGET(),
       devices: Devices = {},
       result = await fetch(`${this._uri}/devices`, requestOptions);
 
@@ -80,7 +104,7 @@ export class SwitchBot {
   }
 
   async deviceStatus(deviceId: string): Promise<LogDeviceStatus | undefined> {
-    const requestOptions = this.requestOptions('GET'),
+    const requestOptions = this.requestOptionsGET(),
       result = await fetch(`${this._uri}/devices/${deviceId}/status`, requestOptions),
       deviceData = await result.json();
 
@@ -91,5 +115,51 @@ export class SwitchBot {
           ...deviceData.body,
         }
       : undefined;
+  }
+
+  async setupWebhook(target: string) {
+    await this.deleteWebhook(target);
+
+    const body: RequestBody = {
+        action: 'setupWebhook',
+        url: target,
+        deviceList: 'ALL',
+      },
+      requestOptions = this.requestOptionsPOST(body),
+      result = await fetch(`${this._uri}/webhook/setupWebhook`, requestOptions);
+
+    return JSON.parse(await result.text());
+  }
+
+  async queryWebhook() {
+    const body: RequestBody = {
+        action: 'queryUrl',
+      },
+      requestOptions = this.requestOptionsPOST(body),
+      result = await fetch(`${this._uri}/webhook/queryWebhook`, requestOptions);
+
+    return JSON.parse(await result.text());
+  }
+
+  async queryDetailsWebhook(target: string) {
+    const body: RequestBody = {
+        action: 'queryDetails',
+        urls: [target],
+      },
+      requestOptions = this.requestOptionsPOST(body),
+      result = await fetch(`${this._uri}/webhook/queryWebhook`, requestOptions);
+
+    return JSON.parse(await result.text());
+  }
+
+  async deleteWebhook(target: string) {
+    const body: RequestBody = {
+        action: 'deleteWebhook',
+        url: target,
+      },
+      requestOptions = this.requestOptionsPOST(body),
+      result = await fetch(`${this._uri}/webhook/deleteWebhook`, requestOptions);
+
+    return JSON.parse(await result.text());
   }
 }
