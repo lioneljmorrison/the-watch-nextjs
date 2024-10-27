@@ -1,4 +1,4 @@
-import { DeviceList, Devices, LogDeviceStatus } from '../../pages/api/v1/interfaces';
+import { DeviceList, Devices } from '../../pages/api/v1/interfaces';
 import * as crypto from 'crypto-js';
 
 interface RequestBody {
@@ -103,7 +103,7 @@ export class SwitchBot {
     return this._devices;
   }
 
-  async deviceStatus(deviceId: string): Promise<LogDeviceStatus | undefined> {
+  async deviceStatus(deviceId: string): Promise<unknown | undefined> {
     const requestOptions = this.requestOptionsGET(),
       result = await fetch(`${this._uri}/devices/${deviceId}/status`, requestOptions),
       deviceData = await result.json();
