@@ -103,7 +103,7 @@ export class Firestore {
 
   static async getDeviceStatus(accountId: string, deviceId: string, statusId: string): Promise<unknown> {
     const devicesRef = this.getDeviceStatusCollectionRef(accountId, deviceId, statusId),
-      status = await devicesRef.get();
+      status = (await devicesRef.get()).data();
 
     return status;
   }
