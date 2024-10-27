@@ -11,8 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'GET':
       if (accountId && deviceId && statusId) {
         try {
-          console.log(process.env.FIREBASE_PROJECT_ID);
-
           const result = await Firestore.getDeviceStatus(accountId, deviceId, statusId);
           res.status(200).json(result);
         } catch (error) {

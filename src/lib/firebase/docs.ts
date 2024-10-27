@@ -114,7 +114,6 @@ export class Firestore {
       result: StatusLog = {};
 
     status.forEach((doc) => {
-      console.log(doc.data());
       result[doc.id] = {
         humidity: doc.data().humidity,
         temperature: doc.data().temperature,

@@ -7,8 +7,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     deviceId = <string>getParam<string>(req, 'deviceId'),
     result = await Firestore.getDeviceStatuses(accountId, deviceId);
 
-  console.log(accountId, deviceId);
-
   switch (req.method) {
     case 'GET':
       if (result) {

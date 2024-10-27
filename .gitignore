@@ -33,3 +33,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+gateway-api-1d895-firebase-adminsdk-rg1pf-90666bf21e.json
