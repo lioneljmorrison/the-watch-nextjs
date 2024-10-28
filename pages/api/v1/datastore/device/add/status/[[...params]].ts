@@ -4,17 +4,21 @@ import { DeviceChangeReport, MeterHookResponse } from '../../../../interfaces';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const watchSecrets: { token: string; secret: string } = {
-      token: req.query.secrets?.[0] || '',
-      secret: req.query.secrets?.[1] || '',
+      token: req.query.params?.[0] || '',
+      secret: req.query.params?.[1] || '',
     },
+    accountId = req.query.params?.[2].toLowerCase() || '',
     tokenStatus = watchSecrets.token === process.env.WATCH_TOKEN && watchSecrets.secret === process.env.WATCH_SECRET;
 
   if (!tokenStatus) {
     return res.status(218).json({ status: 'not authorized', message: 'authorization required' });
   }
 
-  const accountId = (req.query.accountId as string)?.toLowerCase(),
-    body: MeterHookResponse = req.body,
+  if (!accountId.length) {
+    return res.status(218).json({ status: 'not allowed', message: 'aaccoutId must be provided' });
+  }
+
+  const body: MeterHookResponse = req.body,
     context = body?.context,
     deviceId = context?.deviceMac,
     status: DeviceChangeReport = {
