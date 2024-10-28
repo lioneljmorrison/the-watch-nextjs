@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { SwitchBot } from '../../../../../src/utils/switchbot';
+import { getParam } from '@/utils/utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const body = req.body,
-    token = body.auth.token,
-    secret = body.auth.secret;
+  const token = <string>getParam<string>(req, 'token'),
+    secret = <string>getParam<string>(req, 'secret');
 
   switch (req.method) {
     case 'POST':
