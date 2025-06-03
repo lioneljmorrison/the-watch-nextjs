@@ -35,6 +35,10 @@ export interface DeviceImport {
   hubDeviceId: string;
 }
 
+export interface DeviceStatus extends DeviceImport {
+  status?: DeviceChangeReport | null;
+}
+
 export interface DevicesImport {
   [deviceId: string]: DeviceImport;
 }

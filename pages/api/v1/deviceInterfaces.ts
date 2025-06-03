@@ -1,4 +1,4 @@
-import { DeviceChangeReport, DeviceImport } from './interfaces';
+import { DeviceChangeReport, DeviceImport, DeviceStatus } from './interfaces';
 
 export interface DeviceCollection {
   [deviceId: string]: DeviceImport[];
@@ -10,4 +10,8 @@ export interface Devices {
 
 export interface StatusLog {
   [statusId: string]: DeviceChangeReport;
+}
+
+export interface DeviceListStatus {
+  [deviceId: string]: DeviceStatus;
 }

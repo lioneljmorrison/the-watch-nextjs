@@ -1,20 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Firestore } from '@/lib/firebase/docs';
-import { getParam } from '@/utils/utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const accountId = <string>getParam<string>(req, 'accountId')?.toLowerCase(),
-    deviceId = <string>getParam<string>(req, 'deviceId');
+  const accountId = (req.query.account as string)?.toLowerCase(),
+    result = await Firestore.getDeviceListStatus(accountId);
 
   switch (req.method) {
     case 'GET':
-      if (accountId && deviceId) {
-        try {
-          const result = await Firestore.getDeviceLastStatus(accountId, deviceId);
-          res.status(200).json(result);
-        } catch (error) {
-          res.status(500).json(error);
-        }
+      if (result) {
+        res.status(200).json(result);
       } else {
         res.status(204).json('No Content');
       }

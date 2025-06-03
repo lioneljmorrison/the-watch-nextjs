@@ -1,7 +1,7 @@
 import { db } from '@/lib/firebase/firebase';
-import { Companies, Company, DeviceChangeReport, DeviceImport, DevicesImport } from '../../../pages/api/v1/interfaces';
+import { Companies, Company, DeviceChangeReport, DeviceImport, DevicesImport, DeviceStatus } from '../../../pages/api/v1/interfaces';
 import { CollectionReference, DocumentData, DocumentReference, Timestamp, WriteResult } from 'firebase-admin/firestore';
-import { Devices, StatusLog } from '../../../pages/api/v1/deviceInterfaces';
+import { DeviceListStatus, Devices, StatusLog } from '../../../pages/api/v1/deviceInterfaces';
 
 export class Firestore {
   static getCompanyRef(accountId: string): DocumentReference {
@@ -101,14 +101,51 @@ export class Firestore {
     return result;
   }
 
-  static async getDeviceStatus(accountId: string, deviceId: string, statusId: string): Promise<unknown> {
-    const devicesRef = this.getDeviceStatusCollectionRef(accountId, deviceId, statusId),
-      status = (await devicesRef.get()).data();
+  static async getDeviceListStatus(accountId: string): Promise<DeviceListStatus | null> {
+    const devicesRef = this.getDeviceCollection(accountId),
+      status = await devicesRef.get(),
+      result: DeviceListStatus = {};
 
-    return status;
+    if (status.empty) {
+      console.log('No Devices');
+      return null;
+    }
+
+    await Promise.all(
+      status.docs.map(async (doc) => {
+        const deviceStatus = await this.getDeviceLastStatus(accountId, doc.id);
+
+        result[doc.id] = {
+          deviceName: doc.data().deviceName,
+          deviceType: doc.data().deviceType,
+          hubDeviceId: doc.data().hubDeviceId, 
+          status: deviceStatus,       
+        };
+
+        !deviceStatus && delete result[doc.id].status;
+      })
+    );
+
+    return result;
   }
 
-  static async getDeviceStatuses(accountId: string, deviceId: string) {
+  static async getDeviceLastStatus(accountId: string, deviceId: string): Promise<DeviceChangeReport | null> {
+    const devicesRef = this.getDeviceStatusCollection(accountId, deviceId),
+      status = await devicesRef.orderBy('timeOfSample', 'desc').limit(1).get();
+
+    if (status.empty) {
+      return null;
+    }
+
+    const lastDoc = status.docs[0];
+    return {
+      humidity: lastDoc.data().humidity,
+      temperature: lastDoc.data().temperature,
+      timeOfSample: lastDoc.data().timeOfSample,
+    };
+  }
+
+  static async getDeviceStatuses(accountId: string, deviceId: string): Promise<StatusLog | null> {
     const devicesRef = this.getDeviceStatusCollection(accountId, deviceId),
       status = await devicesRef.get(),
       result: StatusLog = {};
