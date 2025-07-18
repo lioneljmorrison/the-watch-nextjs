@@ -35,3 +35,5 @@ yarn-error.log*
 next-env.d.ts
 
 gateway-api-1d895-firebase-adminsdk-rg1pf-90666bf21e.json
+*storybook.log
+storybook-static
