@@ -1,0 +1,130 @@
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  
+  &:hover {
+    background-color: #f9f9f9;
+  }
+
+  // State variations
+  &.TASK_ARCHIVED {
+    opacity: 0.6;
+    .title input {
+      text-decoration: line-through;
+      color: #888;
+    }
+  }
+
+  &.TASK_PINNED {
+    background-color: #fff8e6;
+  }
+}
+
+// Custom checkbox styling
+.checkbox {
+  position: relative;
+  margin-right: 12px;
+  cursor: pointer;
+  
+  // Hide the default checkbox
+  input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  // Custom checkbox appearance
+  .checkbox-custom {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    background-color: white;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #2196F3;
+    }
+  }
+
+  // Checked state
+  input[type="checkbox"]:checked + .checkbox-custom {
+    background-color: #2196F3;
+    border-color: #2196F3;
+
+    // Checkmark
+    &::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+  }
+
+  // Disabled state
+  input[type="checkbox"]:disabled + .checkbox-custom {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Title styling
+.title {
+  flex-grow: 1;
+  margin-right: 12px;
+  
+  input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #333;
+    padding: 4px 0;
+    
+    &:focus {
+      outline: none;
+      border-bottom: 1px solid #2196F3;
+    }
+  }
+}
+
+// Pin button styling
+.pin-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  
+  .icon-star {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    color: #ccc;
+    transition: color 0.2s ease;
+  }
+
+  &:hover .icon-star {
+    color: #ffc107;
+  }
+
+  &:active .icon-star {
+    color: #ff9800;
+  }
+}
+
+// For pinned state
+.TASK_PINNED .pin-button .icon-star {
+  color: #ffc107;
+}

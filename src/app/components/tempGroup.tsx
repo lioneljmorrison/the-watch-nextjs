@@ -20,15 +20,12 @@ export default function TempGroupWidget({ urls, prefs }: { urls: Urls; prefs: Pr
     SBDevices.closeEvent$.subscribe({
       next: () => console.log('WebSocket Disconnected'),
     });
-  }, []);
-
-  useEffect(() => {
     SBDevices.getDevices$().subscribe({
       next: (data) => setLoadedDevices(data.status),
       error: (err) => console.log(`Opps: ${err}`),
       complete: () => console.log('All Done'),
     });
-  }, []);
+  }, [SBDevices]);
 
   return (
     <>
