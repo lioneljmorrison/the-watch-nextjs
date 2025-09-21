@@ -1,4 +1,4 @@
-import Task, { TaskData } from "./Task";
+import Task, { TaskData } from './Task';
 
 type TaskListProps = {
   loading?: boolean;
@@ -7,12 +7,7 @@ type TaskListProps = {
   onArchiveTask: (id: string) => void;
 };
 
-export default function TaskList({
-  loading = false,
-  tasks,
-  onPinTask,
-  onArchiveTask,
-}: TaskListProps) {
+export default function TaskList({ loading = false, tasks, onPinTask, onArchiveTask }: TaskListProps) {
   const events = {
     onPinTask,
     onArchiveTask,
