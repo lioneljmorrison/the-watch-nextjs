@@ -17,7 +17,7 @@ const BatteryMeter: React.FC<BatteryMeterProps> = ({ batteryLevel }) => {
         ></div>
       </div>
       <span
-        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-medium text-gray-900`}
+        className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-medium text-gray-900'
       >
         {Math.min(batteryLevel, 100)}
       </span>
