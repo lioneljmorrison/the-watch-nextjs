@@ -1,6 +1,7 @@
 import React from 'react';
 import BatteryMeter from '../BatteryMeter/BatteryMeter'; // Assuming this component exists
-import { CiWifiOn, CiWifiOff } from 'react-icons/ci';
+import { FaTemperatureArrowDown, FaTemperatureArrowUp } from 'react-icons/fa6';
+import { FiWifiOff, FiWifi } from 'react-icons/fi';
 
 interface DisplayMeterProps {
   deviceName: string;
@@ -63,7 +64,9 @@ const DisplayMeter: React.FC<DisplayMeterProps> = ({
       <div className="flex justify-between items-center w-full mb-4">
         <BatteryMeter batteryLevel={batteryLevel} />
 
-        {hasSignal ? <CiWifiOn className="text-3xl" /> : <CiWifiOff className="text-3xl" />}
+        {tempTrend === 'rising' && <FaTemperatureArrowUp className="text-3xl" />}
+        {tempTrend === 'falling' && <FaTemperatureArrowDown className="text-3xl" />}
+        {hasSignal ? <FiWifi className="text-3xl" /> : <FiWifiOff className="text-3xl" />}
       </div>
 
       <div className="flex flex-row items-end">
@@ -81,8 +84,8 @@ const DisplayMeter: React.FC<DisplayMeterProps> = ({
 
       <div className="mt-6 text-lg font-semibold">{deviceName}</div>
 
-      {tempTrend === 'rising' && <span className="absolute top-1/2 right-4 -translate-y-1/2 text-5xl">↑</span>}
-      {tempTrend === 'falling' && <span className="absolute top-1/2 right-4 -translate-y-1/2 text-5xl">↓</span>}
+      {/* {tempTrend === 'rising' && <span className="absolute top-1/2 right-4 -translate-y-1/2 text-5xl">↑</span>}
+      {tempTrend === 'falling' && <span className="absolute top-1/2 right-4 -translate-y-1/2 text-5xl">↓</span>} */}
     </div>
   );
 };
