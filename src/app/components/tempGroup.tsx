@@ -1,23 +1,11 @@
 'use client';
-import { DeviceStatus, Preferences } from '../interfaces';
-// import { SwitchBotDevices, Urls } from '../switchBotDevices';
 import React, { Suspense, useEffect } from 'react';
-// import TempWidget from './temp';
 import Loading from './loading';
 import { useDataStore } from '../state/dataStore';
 import DisplayMeter from './DisplayMeter/DisplayMeter';
 
-export default function TempGroupWidget({ prefs }: { prefs: Preferences }) {
+export default function TempGroupWidget() {
   const { setAccountId, collection, getCollection } = useDataStore();
-
-  useEffect(() => {
-    if (collection) {
-      Object.entries(collection).map((deviceStatus) => {
-        const [deviceId, deviceInfo] = deviceStatus;
-        console.log(deviceId, deviceInfo);
-      });
-    }
-  }, [collection]);
 
   useEffect(() => {
     setAccountId('HCC');
@@ -33,6 +21,7 @@ export default function TempGroupWidget({ prefs }: { prefs: Preferences }) {
               const [deviceId, deviceInfo] = deviceStatus;
 
               return <DisplayMeter
+                key={deviceId}
                 batteryLevel={75}
                 dateTime={deviceInfo?.status ? new Date(deviceInfo.status.timeOfSample as string) : null}
                 deviceName={deviceInfo.deviceName}
