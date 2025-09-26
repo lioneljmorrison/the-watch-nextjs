@@ -10,7 +10,7 @@ interface DisplayMeterProps {
   humidityLevel: number;
   isCelsius: boolean;
   hasSignal: boolean;
-  dateTime: Date;
+  dateTime: Date | null;
   tempTrend: 'rising' | 'falling' | 'neutral'; // New prop for temperature trend
 }
 
@@ -77,10 +77,12 @@ const DisplayMeter: React.FC<DisplayMeterProps> = ({
         </div>
       </div>
 
+    { dateTime && (
       <div className="text-lg mt-auto">
         <div className="text-center">{formatDate(dateTime)}</div>
         <div className="text-center">{formatTime(dateTime)}</div>
       </div>
+    )}
 
       <div className="mt-6 text-lg font-semibold">{deviceName}</div>
 

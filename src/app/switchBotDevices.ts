@@ -1,19 +1,5 @@
-import {
-  Observable,
-  Subject,
-  catchError,
-  forkJoin,
-  map,
-  of,
-  switchMap,
-} from 'rxjs';
-import {
-  DeviceStatus,
-  Device,
-  LambdaDevice,
-  LambdaDeviceStatus,
-  DeviceMap,
-} from './interfaces';
+import { Observable, Subject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { DeviceStatus, Device, LambdaDevice, LambdaDeviceStatus, DeviceMap } from './interfaces';
 import { fromFetch } from 'rxjs/fetch';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 
@@ -84,9 +70,7 @@ export class SwitchBotDevices {
     });
   }
 
-  private fetchURI$<T>(
-    endpoint: string,
-  ): Observable<T[] | { error: boolean; message: string }> {
+  private fetchURI$<T>(endpoint: string): Observable<T[] | { error: boolean; message: string }> {
     return fromFetch(endpoint).pipe(
       switchMap((response) => {
         if (response.ok) {
@@ -101,25 +85,21 @@ export class SwitchBotDevices {
         // Network or other error, handle appropriately
         console.error(err);
         return of({ error: true, message: err.message });
-      }),
+      })
     );
   }
 
   getDevices$(): Observable<{ device: Device[]; status: DeviceStatus[] }> {
     const fork = {
-      status$: this.fetchURI$<LambdaDeviceStatus>(
-        `${this._urls.lambda}/get-latest/${this._accountId}`,
-      ),
-      devices$: this.fetchURI$<LambdaDevice>(
-        `${this._urls.lambda}/get-devices/${this._accountId}`,
-      ),
+      status$: this.fetchURI$<LambdaDeviceStatus>(`${this._urls.lambda}/get-latest/${this._accountId}`),
+      devices$: this.fetchURI$<LambdaDevice>(`${this._urls.lambda}/get-devices/${this._accountId}`),
     };
 
     return forkJoin(fork).pipe(
       map((data) => ({
         device: this.transformDevices(<LambdaDevice[]>data.devices$),
         status: this.transformDeviceStatus(<LambdaDeviceStatus[]>data.status$),
-      })),
+      }))
     );
   }
 }
